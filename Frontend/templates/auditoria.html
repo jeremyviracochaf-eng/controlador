@@ -1,64 +1,286 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="es">
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría - Control RFID</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <style>
+        .table-wrapper {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
 
-    <title>Auditoría</title>
+        .table-responsive {
+            overflow-x: auto;
+        }
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
+        .table thead {
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table thead th {
+            padding: var(--spacing-lg);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+
+        .table tbody td {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .table tbody tr {
+            transition: all var(--transition-base);
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: 6px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+            color: var(--accent-primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .action-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .action-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .action-create {
+            color: var(--accent-secondary);
+        }
+
+        .action-update {
+            color: var(--accent-warning);
+        }
+
+        .action-delete {
+            color: var(--accent-danger);
+        }
+
+        .timestamp {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .timestamp-date {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .timestamp-time {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--text-tertiary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-lg);
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .table {
+                font-size: 0.9rem;
+            }
+
+            .table thead th,
+            .table tbody td {
+                padding: var(--spacing-md);
+            }
+        }
+    </style>
 </head>
 
 <body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/dashboard" class="sidebar-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>RFID</span>
+                </a>
+            </div>
 
-<div class="container mt-4">
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <a href="/dashboard" class="nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/usuarios" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </div>
 
-    <h2>Auditoría del Sistema</h2>
+                <div class="nav-section">
+                    <div class="nav-section-title">Operaciones</div>
+                    <a href="/abrir_puerta" class="nav-item">
+                        <i class="fas fa-door-open"></i>
+                        <span>Abrir Puerta</span>
+                    </a>
+                    <a href="/registrar_tarjeta" class="nav-item">
+                        <i class="fas fa-id-card"></i>
+                        <span>Registrar Tarjeta</span>
+                    </a>
+                </div>
 
-    <a href="/dashboard"
-       class="btn btn-secondary mb-3">
+                <div class="nav-section">
+                    <div class="nav-section-title">Reportes</div>
+                    <a href="/historial" class="nav-item">
+                        <i class="fas fa-history"></i>
+                        <span>Historial</span>
+                    </a>
+                    <a href="/auditoria" class="nav-item active">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Auditoría</span>
+                    </a>
+                </div>
+            </nav>
 
-       Volver
+            <div class="sidebar-footer">
+                <a href="/logout" class="btn btn-secondary btn-block" style="margin: 0;">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </aside>
 
-    </a>
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <div class="page-title-section">
+                        <h1 class="page-title">
+                            <i class="fas fa-clipboard-list"></i> Auditoría del Sistema
+                        </h1>
+                        <p class="page-subtitle">Registro de cambios y actividades administrativas</p>
+                    </div>
+                    <div class="page-actions">
+                        <a href="/dashboard" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
 
-    <table class="table table-bordered table-striped">
+                <!-- Tabla de Auditoría -->
+                <div class="table-wrapper">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-hashtag"></i> ID</th>
+                                    <th><i class="fas fa-user-shield"></i> Administrador</th>
+                                    <th><i class="fas fa-cog"></i> Acción</th>
+                                    <th><i class="fas fa-calendar-alt"></i> Fecha y Hora</th>
+                                </tr>
+                            </thead>
 
-        <thead>
+                            <tbody>
+                                {% if registros %}
+                                    {% for registro in registros %}
+                                        <tr>
+                                            <td>
+                                                <strong>#{{ registro[0] }}</strong>
+                                            </td>
+                                            <td>
+                                                <div class="admin-badge">
+                                                    <i class="fas fa-user-shield"></i> {{ registro[1] }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="action-cell">
+                                                    {% if 'crear' in registro[2].lower() or 'cre' in registro[2].lower() %}
+                                                        <div class="action-icon action-create">
+                                                            <i class="fas fa-plus-circle"></i> {{ registro[2] }}
+                                                        </div>
+                                                    {% elif 'actualiz' in registro[2].lower() or 'editar' in registro[2].lower() %}
+                                                        <div class="action-icon action-update">
+                                                            <i class="fas fa-edit"></i> {{ registro[2] }}
+                                                        </div>
+                                                    {% elif 'elimin' in registro[2].lower() or 'borr' in registro[2].lower() %}
+                                                        <div class="action-icon action-delete">
+                                                            <i class="fas fa-trash"></i> {{ registro[2] }}
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="action-icon">
+                                                            <i class="fas fa-info-circle"></i> {{ registro[2] }}
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="timestamp">
+                                                    <div class="timestamp-date">{{ registro[3] }}</div>
+                                                    <div class="timestamp-time">{{ registro[4] }}</div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="empty-state">
+                                                <i class="fas fa-inbox"></i>
+                                                <p>No hay registros de auditoría</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-            <tr>
-                <th>ID</th>
-                <th>Administrador</th>
-                <th>Acción</th>
-                <th>Fecha</th>
-            </tr>
+            </div>
+        </main>
+    </div>
 
-        </thead>
-
-        <tbody>
-
-            {% for r in registros %}
-
-            <tr>
-
-                <td>{{ r[0] }}</td>
-                <td>{{ r[1] }}</td>
-                <td>{{ r[2] }}</td>
-                <td>{{ r[3] }}</td>
-
-            </tr>
-
-            {% endfor %}
-
-        </tbody>
-
-    </table>
-
-</div>
-
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
-
 </html>

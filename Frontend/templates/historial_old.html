@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Accesos - Control RFID</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+            box-shadow: 0 4px 15px rgba(0, 102, 204, 0.2);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .navbar-brand i {
+            margin-right: 8px;
+        }
+
+        .main-content {
+            padding: 40px 20px;
+        }
+
+        .page-header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .page-title {
+            color: #1a1a1a;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 73, 94, 0.3);
+            color: white;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table thead {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8eef5 100%);
+            border: none;
+        }
+
+        .table thead th {
+            color: #1a1a1a;
+            font-weight: 700;
+            border: none;
+            padding: 18px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table tbody td {
+            padding: 18px;
+            vertical-align: middle;
+            border-color: #e8eef5;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .badge {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-permitido {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .badge-denegado {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .badge-remoto {
+            background-color: #0066cc;
+            color: white;
+        }
+
+        .time-info {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .ui-badge {
+            background-color: #f0f4f8;
+            color: #0066cc;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .table {
+                font-size: 0.9rem;
+            }
+
+            .table thead th,
+            .table tbody td {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="container-fluid px-4">
+        <a href="/dashboard" class="navbar-brand">
+            <i class="fas fa-lock"></i> Sistema RFID
+        </a>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-history"></i> Historial de Accesos
+            </h1>
+            <a href="/dashboard" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+
+        <div class="table-container">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag"></i> ID</th>
+                    <th><i class="fas fa-clock"></i> Fecha y Hora</th>
+                    <th><i class="fas fa-id-card"></i> UID RFID</th>
+                    <th><i class="fas fa-user"></i> Usuario</th>
+                    <th><i class="fas fa-info-circle"></i> Estado</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for acceso in accesos %}
+                <tr>
+                    <td><strong>{{ acceso[0] }}</strong></td>
+                    <td>
+                        <div class="time-info">{{ acceso[1] }}</div>
+                    </td>
+                    <td>
+                        <span class="ui-badge">{{ acceso[2] }}</span>
+                    </td>
+
+                    <td>
+                        {% if acceso[3] %}
+                            {{ acceso[3] }}
+                        {% else %}
+                            {% if acceso[4] == 'Remoto' %}
+                                <em style="color: #999;">Apertura Web</em>
+                            {% else %}
+                                <em style="color: #999;">Desconocido</em>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if acceso[4] == 'Permitido' %}
+                            <span class="badge badge-permitido">
+                                <i class="fas fa-check-circle"></i> Permitido
+                            </span>
+                        {% elif acceso[4] == 'Denegado' %}
+                            <span class="badge badge-denegado">
+                                <i class="fas fa-times-circle"></i> Denegado
+                            </span>
+                        {% else %}
+                            <span class="badge badge-remoto">
+                                <i class="fas fa-globe"></i> Remoto
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -1,191 +1,388 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - Control de Acceso</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Control de Acceso RFID</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <style>
+        .door-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-lg);
+            padding: var(--spacing-xl);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: var(--spacing-lg);
+            transition: all var(--transition-base);
+        }
+
+        .door-status.active {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+            border-color: var(--accent-secondary);
+        }
+
+        .door-icon {
+            font-size: 3rem;
+            animation: pulse var(--transition-slow) infinite;
+        }
+
+        .door-status.active .door-icon {
+            color: var(--accent-secondary);
+        }
+
+        .door-status:not(.active) .door-icon {
+            color: var(--accent-danger);
+        }
+
+        .door-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .door-label {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .door-state {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .door-status.active .door-state {
+            color: var(--accent-secondary);
+        }
+
+        .door-status:not(.active) .door-state {
+            color: var(--accent-danger);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .activity-section {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-xl);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .section-title i {
+            color: var(--accent-primary);
+            font-size: 1.2rem;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            border-left: 3px solid var(--border-color);
+            transition: all var(--transition-base);
+        }
+
+        .activity-item:hover {
+            border-left-color: var(--accent-primary);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .activity-icon.success {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--accent-secondary);
+        }
+
+        .activity-icon.danger {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--accent-danger);
+        }
+
+        .activity-details {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .activity-time {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+
+        .no-activity {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--text-tertiary);
+        }
+
+        @media (max-width: 768px) {
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/dashboard" class="sidebar-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>RFID</span>
+                </a>
+            </div>
 
-<div class="container mt-4">
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <a href="/dashboard" class="nav-item active">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/usuarios" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h1>Sistema Inteligente de Control de Acceso RFID</h1>
-            <h5>Bienvenido {{ session['usuario'] }}</h5>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="/abrir_puerta" class="btn btn-danger">Abrir Puerta</a>
-            <a href="/logout" class="btn btn-secondary">Cerrar Sesión</a>
-        </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Operaciones</div>
+                    <a href="/abrir_puerta" class="nav-item">
+                        <i class="fas fa-door-open"></i>
+                        <span>Abrir Puerta</span>
+                    </a>
+                    <a href="/registrar_tarjeta" class="nav-item">
+                        <i class="fas fa-id-card"></i>
+                        <span>Registrar Tarjeta</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Reportes</div>
+                    <a href="/historial" class="nav-item">
+                        <i class="fas fa-history"></i>
+                        <span>Historial</span>
+                    </a>
+                    <a href="/auditoria" class="nav-item">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Auditoría</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {{ session['usuario'][0].upper() }}
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name">{{ session['usuario'] }}</div>
+                        <div class="user-role">Administrador</div>
+                    </div>
+                </div>
+                <a href="/logout" class="btn btn-secondary btn-block" style="margin: 0;">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <div class="page-title-section">
+                        <h1 class="page-title">
+                            <i class="fas fa-chart-line"></i> Dashboard
+                        </h1>
+                        <p class="page-subtitle">Sistema Inteligente de Control de Acceso RFID</p>
+                    </div>
+                    <div class="page-actions">
+                        <a href="/abrir_puerta" class="btn btn-danger">
+                            <i class="fas fa-door-open"></i> Abrir Puerta
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Alertas Flash -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-success animate-fade-in" style="margin-bottom: var(--spacing-lg);">
+                                <div class="alert-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-message">{{ message }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-3 mb-lg">
+                    <div class="card stat-card animate-fade-in">
+                        <div class="stat-label">
+                            <i class="fas fa-users"></i> Total de Usuarios
+                        </div>
+                        <div class="stat-value">{{ total_usuarios }}</div>
+                        <div class="stat-change positive" style="margin-top: auto;">
+                            <i class="fas fa-arrow-up"></i> Activos
+                        </div>
+                    </div>
+
+                    <div class="card stat-card animate-fade-in" style="animation-delay: 0.1s;">
+                        <div class="stat-label">
+                            <i class="fas fa-check-circle"></i> Accesos Permitidos
+                        </div>
+                        <div class="stat-value" style="color: var(--accent-secondary);">{{ permitidos }}</div>
+                        <div class="stat-change positive" style="margin-top: auto;">
+                            <i class="fas fa-chart-line"></i> Hoy
+                        </div>
+                    </div>
+
+                    <div class="card stat-card animate-fade-in" style="animation-delay: 0.2s;">
+                        <div class="stat-label">
+                            <i class="fas fa-times-circle"></i> Accesos Denegados
+                        </div>
+                        <div class="stat-value" style="color: var(--accent-danger);">{{ denegados }}</div>
+                        <div class="stat-change negative" style="margin-top: auto;">
+                            <i class="fas fa-alert-circle"></i> Advertencia
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estado de Puerta -->
+                <div class="door-status animate-fade-in">
+                    <div class="door-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="door-info">
+                        <div class="door-label">Estado de la puerta</div>
+                        <div class="door-state" id="estadoPuerta">🔒 Bloqueada</div>
+                    </div>
+                </div>
+
+                <!-- Acciones Rápidas -->
+                <div class="quick-actions">
+                    <a href="/usuarios" class="card animate-fade-in" style="cursor: pointer; text-decoration: none; color: inherit; transition: all var(--transition-base);">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: var(--accent-primary); margin-bottom: var(--spacing-md);">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--spacing-sm);">Gestionar Usuarios</div>
+                            <div style="font-size: 0.85rem; color: var(--text-tertiary);">Crear, editar y eliminar usuarios</div>
+                        </div>
+                    </a>
+
+                    <a href="/registrar_tarjeta" class="card animate-fade-in" style="cursor: pointer; text-decoration: none; color: inherit; transition: all var(--transition-base); animation-delay: 0.1s;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: var(--accent-warning); margin-bottom: var(--spacing-md);">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--spacing-sm);">Registrar Tarjeta</div>
+                            <div style="font-size: 0.85rem; color: var(--text-tertiary);">Emparejar RFID con usuario</div>
+                        </div>
+                    </a>
+
+                    <a href="/historial" class="card animate-fade-in" style="cursor: pointer; text-decoration: none; color: inherit; transition: all var(--transition-base); animation-delay: 0.2s;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: var(--accent-info); margin-bottom: var(--spacing-md);">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--spacing-sm);">Historial</div>
+                            <div style="font-size: 0.85rem; color: var(--text-tertiary);">Ver registros de acceso</div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Último Acceso -->
+                <div class="activity-section animate-fade-in">
+                    <div class="section-title">
+                        <i class="fas fa-recent-history"></i> Último Acceso Registrado
+                    </div>
+                    {% if ultimo_acceso %}
+                        <div class="activity-item">
+                            <div class="activity-icon success">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="activity-details">
+                                <div class="activity-title">{{ ultimo_acceso[0] }}</div>
+                                <div class="activity-time"><strong>{{ ultimo_acceso[1] }}</strong></div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="no-activity">
+                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                            <p>Sin registros disponibles</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </main>
     </div>
 
-    <hr>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-success mt-3 mb-3">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <script>
+        // WebSocket para estado de puerta en tiempo real
+        const socket = io();
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5>Total Usuarios</h5>
-                    <h2>{{ total_usuarios }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5>Accesos Permitidos</h5>
-                    <h2>{{ permitidos }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5>Accesos Denegados</h5>
-                    <h2>{{ denegados }}</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="alert alert-info mt-4">
-        <strong>Último acceso:</strong>
-        {% if ultimo_acceso %}
-            {{ ultimo_acceso[0] }} - {{ ultimo_acceso[1] }}
-        {% else %}
-            Sin registros
-        {% endif %}
-    </div>
-
-    <hr>
-
-    <div class="row mt-4 g-3 justify-content-center">
-        <div class="col-sm-6 col-md-4 col-lg-3">
-            <a href="/usuarios" class="btn btn-primary w-100">Usuarios</a>
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3">
-            <a href="/historial" class="btn btn-success w-100">Historial</a>
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3">
-            <a href="/registrar_tarjeta" class="btn btn-warning w-100">
-                Registrar Tarjeta RFID
-            </a>
-        </div>
-        <div class="col-sm-6 col-md-4 col-lg-3">
-            <a href="/auditoria" class="btn btn-dark w-100">
-                Auditoría
-            </a>
-        </div>
-    </div>
-
-    <div class="row mt-5 g-4">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">Estadísticas de Acceso</div>
-                <div class="card-body">
-                    <canvas id="graficoAccesos"></canvas>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card text-center h-100 d-flex flex-column justify-content-center">
-                <div class="card-header">Monitoreo Físico</div>
-                <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                    <h5 class="text-muted">Estado de la Puerta</h5>
-                    <h2 id="estadoPuerta" class="mt-2">
-                        🔒 Bloqueada
-                    </h2>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('graficoAccesos');
-    if (ctx) {
-        new Chart(ctx, {
-            type: 'line', 
-            data: {
-                labels: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'],
-                datasets: [
-                    {
-                        label: 'Investigación Docente (Permitidos)',
-                        data: [4, 8, 12, 3, 9, 14, 2], 
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    },
-                    {
-                        label: 'Intentos No Autorizados (Denegados)',
-                        data: [1, 5, 2, 0, 7, 1, 0], 
-                        borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Uso del Aula de Investigación por Hora'
-                    }
-                },
-                scales: {
-                    y: { beginAtZero: true }
-                }
+        socket.on('cambio_puerta', function(data) {
+            const elemento = document.getElementById("estadoPuerta");
+            const doorStatus = document.querySelector('.door-status');
+            
+            if (data.estado === "Desbloqueada") {
+                elemento.innerHTML = "🔓 Desbloqueada";
+                doorStatus.classList.add('active');
+            } else {
+                elemento.innerHTML = "🔒 Bloqueada";
+                doorStatus.classList.remove('active');
             }
+            console.log("Estado de puerta actualizado: ", data.estado);
         });
-    }
-});
-</script>
-
-<script>
-function actualizarEstadoPuerta() {
-    fetch('/obtener_estado_puerta')
-    .then(response => response.json())
-    .then(data => {
-        let elemento = document.getElementById("estadoPuerta");
-        if(data.estado == "Desbloqueada") {
-            elemento.innerHTML = "🔓 Desbloqueada";
-            // Opcional: añade una clase dinámica si quieres cambiar colores luego
-            elemento.classList.remove("text-danger");
-            elemento.classList.add("text-success");
-        }
-        else {
-            elemento.innerHTML = "🔒 Bloqueada";
-            elemento.classList.remove("text-success");
-            elemento.classList.add("text-danger");
-        }
-    })
-    .catch(error => console.error("Error consultando el estado:", error));
-}
-
-// Consultar el endpoint cada 1000 milisegundos (1 segundo)
-setInterval(actualizarEstadoPuerta, 1000);
-</script>
+    </script>
 
 </body>
 </html>

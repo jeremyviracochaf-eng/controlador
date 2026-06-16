@@ -1,56 +1,401 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Registrar Tarjeta RFID</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Tarjeta RFID - Control RFID</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <style>
+        .card-wrapper {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card-container {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-2xl);
+            text-align: center;
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent-warning), var(--accent-info));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--spacing-xl);
+            font-size: 2rem;
+            color: white;
+            animation: pulse var(--transition-slow) infinite;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .instruction-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(6, 182, 212, 0.1));
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-warning);
+            border-radius: 8px;
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            text-align: left;
+        }
+
+        .instruction-title {
+            font-weight: 600;
+            color: var(--accent-warning);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .instruction-content {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .uid-display {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+            border: 2px dashed var(--accent-primary);
+            border-radius: 12px;
+            padding: var(--spacing-2xl);
+            margin-bottom: var(--spacing-xl);
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-lg);
+        }
+
+        .uid-label {
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .uid-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .uid-value.waiting {
+            color: var(--text-tertiary);
+            font-size: 1.5rem;
+            font-style: italic;
+        }
+
+        .uid-status {
+            font-size: 0.85rem;
+            color: var(--accent-secondary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .status-icon {
+            animation: spin 2s linear infinite;
+        }
+
+        .step-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.95rem;
+        }
+
+        .form-control,
+        .form-select {
+            width: 100%;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: var(--spacing-md);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all var(--transition-base);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        .form-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-2xl);
+        }
+
+        .form-actions .btn {
+            padding: var(--spacing-md) var(--spacing-lg);
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .card-wrapper {
+                padding: var(--spacing-lg);
+            }
+
+            .card-container {
+                padding: var(--spacing-lg);
+            }
+
+            .uid-value {
+                font-size: 1.8rem;
+            }
+
+            .form-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/dashboard" class="sidebar-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>RFID</span>
+                </a>
+            </div>
 
-<div class="container mt-5">
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <a href="/dashboard" class="nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/usuarios" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </div>
 
-    <h2>Registro de Tarjeta RFID</h2>
+                <div class="nav-section">
+                    <div class="nav-section-title">Operaciones</div>
+                    <a href="/abrir_puerta" class="nav-item">
+                        <i class="fas fa-door-open"></i>
+                        <span>Abrir Puerta</span>
+                    </a>
+                    <a href="/registrar_tarjeta" class="nav-item active">
+                        <i class="fas fa-id-card"></i>
+                        <span>Registrar Tarjeta</span>
+                    </a>
+                </div>
 
-    <hr>
+                <div class="nav-section">
+                    <div class="nav-section-title">Reportes</div>
+                    <a href="/historial" class="nav-item">
+                        <i class="fas fa-history"></i>
+                        <span>Historial</span>
+                    </a>
+                    <a href="/auditoria" class="nav-item">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Auditoría</span>
+                    </a>
+                </div>
+            </nav>
 
-    <div class="alert alert-warning">
-        Acerque una tarjeta o llavero RFID al lector.
+            <div class="sidebar-footer">
+                <a href="/logout" class="btn btn-secondary btn-block" style="margin: 0;">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <div class="page-title-section">
+                        <h1 class="page-title">
+                            <i class="fas fa-id-card"></i> Registrar Tarjeta RFID
+                        </h1>
+                        <p class="page-subtitle">Emparejar tarjeta con usuario</p>
+                    </div>
+                    <div class="page-actions">
+                        <a href="/dashboard" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-wrapper">
+                    <div class="card-container animate-fade-in">
+                        <span class="step-badge">
+                            <i class="fas fa-circle-1"></i> Paso 1 de 2
+                        </span>
+
+                        <div class="card-icon">
+                            <i class="fas fa-rf-wave"></i>
+                        </div>
+
+                        <h2 class="card-title">Lectura de Tarjeta RFID</h2>
+                        <p class="card-subtitle">Acerque la tarjeta al lector para capturar el UID</p>
+
+                        <div class="instruction-box">
+                            <div class="instruction-title">
+                                <i class="fas fa-lightbulb"></i> Instrucciones
+                            </div>
+                            <div class="instruction-content">
+                                <ol style="margin: 0; padding-left: var(--spacing-lg);">
+                                    <li>Acerque la tarjeta RFID al lector</li>
+                                    <li>El UID se capturará automáticamente</li>
+                                    <li>Seleccione el usuario a asociar</li>
+                                    <li>Confirme el registro</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="uid-display">
+                            <div class="uid-label">UID Detectado</div>
+                            <div id="uidValue" class="uid-value waiting">
+                                <i class="fas fa-hourglass-half animate-spin"></i> Esperando...
+                            </div>
+                        </div>
+
+                        <form id="registerForm" action="/actualizar_rfid_usuario" method="POST" style="text-align: left;">
+                            <div class="form-group">
+                                <label for="uid" class="form-label">
+                                    <i class="fas fa-id-card"></i> UID RFID (Manual)
+                                </label>
+                                <input
+                                    type="text"
+                                    id="uid"
+                                    name="uid"
+                                    class="form-control"
+                                    placeholder="Si no se detecta automáticamente, ingréselo aquí"
+                                    required>
+                            </div>
+
+                            <span class="step-badge">
+                                <i class="fas fa-circle-2"></i> Paso 2 de 2
+                            </span>
+
+                            <div class="form-group">
+                                <label for="usuario_id" class="form-label">
+                                    <i class="fas fa-user"></i> Seleccionar Usuario
+                                </label>
+                                <select id="usuario_id" name="usuario_id" class="form-select" required>
+                                    <option value="">-- Seleccione un usuario --</option>
+                                    {% for usuario in usuarios %}
+                                        <option value="{{ usuario[0] }}" {% if usuario[0] == usuario_seleccionado %}selected{% endif %}>
+                                            {{ usuario[1] }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-actions">
+                                <a href="/dashboard" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check"></i> Registrar Tarjeta
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </main>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <h4>UID Detectado</h4>
-            <h2 id="uidDetectado">
-                Esperando...
-            </h2>
-        </div>
-    </div>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 
-    <br>
+    <script>
+        // WebSocket para lectura RFID en tiempo real
+        const socket = io();
 
-    <a href="/nuevo_usuario" class="btn btn-success">
-        Continuar Registro
-    </a>
+        socket.on('rfid_detectado', function(data) {
+            const uidValue = document.getElementById('uidValue');
+            const uidInput = document.getElementById('uid');
 
-</div>
+            uidValue.textContent = data.uid;
+            uidValue.classList.remove('waiting');
+            uidInput.value = data.uid;
 
-<script>
-fetch('/limpiar_uid');
+            // Mostrar confirmación visual
+            uidValue.style.color = 'var(--accent-secondary)';
+            setTimeout(() => {
+                uidValue.style.color = 'var(--accent-primary)';
+            }, 1000);
+        });
 
-function obtenerUID() {
-    fetch('/obtener_uid')
-    .then(response => response.json())
-    .then(data => {
-        if(data.uid){
-            document.getElementById("uidDetectado").innerText = data.uid;
-        }
-    });
-}
+        // Validación de formulario
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const uid = document.getElementById('uid').value.trim();
+            const usuarioId = document.getElementById('usuario_id').value;
 
-setInterval(obtenerUID, 1000);
-</script>
+            if (!uid) {
+                e.preventDefault();
+                showAlert('Por favor ingrese o detecte el UID RFID', 'danger');
+                return false;
+            }
 
+            if (!usuarioId) {
+                e.preventDefault();
+                showAlert('Por favor seleccione un usuario', 'danger');
+                return false;
+            }
+
+            return true;
+        });
+    </script>
 </body>
 </html>

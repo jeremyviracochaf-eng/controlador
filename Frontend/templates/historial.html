@@ -2,71 +2,333 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Historial de Accesos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Accesos - Control RFID</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <style>
+        .filter-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+        }
+
+        .table-wrapper {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table thead {
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table thead th {
+            padding: var(--spacing-lg);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+
+        .table tbody td {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .table tbody tr {
+            transition: all var(--transition-base);
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .access-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-permitido {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--accent-secondary);
+        }
+
+        .badge-denegado {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--accent-danger);
+        }
+
+        .badge-remoto {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: var(--accent-primary);
+        }
+
+        .uid-code {
+            background-color: var(--bg-tertiary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+        }
+
+        .time-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .time-date {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .time-hour {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--text-tertiary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-lg);
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .filter-box {
+                grid-template-columns: 1fr;
+            }
+
+            .table {
+                font-size: 0.9rem;
+            }
+
+            .table thead th,
+            .table tbody td {
+                padding: var(--spacing-md);
+            }
+        }
+    </style>
 </head>
 
 <body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/dashboard" class="sidebar-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>RFID</span>
+                </a>
+            </div>
 
-<div class="container mt-4">
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <a href="/dashboard" class="nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/usuarios" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </div>
 
-    <h2>Historial de Accesos</h2>
+                <div class="nav-section">
+                    <div class="nav-section-title">Operaciones</div>
+                    <a href="/abrir_puerta" class="nav-item">
+                        <i class="fas fa-door-open"></i>
+                        <span>Abrir Puerta</span>
+                    </a>
+                    <a href="/registrar_tarjeta" class="nav-item">
+                        <i class="fas fa-id-card"></i>
+                        <span>Registrar Tarjeta</span>
+                    </a>
+                </div>
 
-    <a href="/dashboard" class="btn btn-secondary mb-3">
-        Volver
-    </a>
+                <div class="nav-section">
+                    <div class="nav-section-title">Reportes</div>
+                    <a href="/historial" class="nav-item active">
+                        <i class="fas fa-history"></i>
+                        <span>Historial</span>
+                    </a>
+                    <a href="/auditoria" class="nav-item">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Auditoría</span>
+                    </a>
+                </div>
+            </nav>
 
-    <table class="table table-bordered table-striped align-middle">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Fecha y Hora</th>
-            <th>UID RFID</th>
-            <th>Usuario</th>
-            <th>Estado</th>
-        </tr>
-        </thead>
+            <div class="sidebar-footer">
+                <a href="/logout" class="btn btn-secondary btn-block" style="margin: 0;">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </aside>
 
-        <tbody>
-        {% for acceso in accesos %}
-        <tr>
-            <td>{{ acceso[0] }}</td>
-            <td>{{ acceso[1] }}</td>
-            <td>{{ acceso[2] }}</td>
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <div class="page-title-section">
+                        <h1 class="page-title">
+                            <i class="fas fa-history"></i> Historial de Accesos
+                        </h1>
+                        <p class="page-subtitle">Registro completo de eventos de acceso del sistema</p>
+                    </div>
+                    <div class="page-actions">
+                        <a href="/dashboard" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
 
-            <td>
-                {% if acceso[3] %}
-                    {{ acceso[3] }}
-                {% else %}
-                    {% if acceso[4] == 'Remoto' %}
-                        <em>Apertura Web</em>
-                    {% else %}
-                        Desconocido
-                    {% endif %}
-                {% endif %}
-            </td>
+                <!-- Filtros -->
+                <div class="filter-box">
+                    <div class="form-group" style="margin: 0;">
+                        <label class="form-label" style="margin-bottom: var(--spacing-sm);">
+                            <i class="fas fa-search"></i> Buscar Usuario
+                        </label>
+                        <input
+                            type="text"
+                            id="filterNombre"
+                            class="form-control"
+                            placeholder="Nombre o UID..."
+                            onkeyup="filterTable()">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label class="form-label" style="margin-bottom: var(--spacing-sm);">
+                            <i class="fas fa-filter"></i> Estado de Acceso
+                        </label>
+                        <select id="filterEstado" class="form-control" onchange="filterTable()">
+                            <option value="">Todos</option>
+                            <option value="permitido">Permitido</option>
+                            <option value="denegado">Denegado</option>
+                        </select>
+                    </div>
+                </div>
 
-            <td>
-                {% if acceso[4] == 'Permitido' %}
-                    <span class="badge bg-success">
-                        Permitido
-                    </span>
-                {% elif acceso[4] == 'Denegado' %}
-                    <span class="badge bg-danger">
-                        Denegado
-                    </span>
-                {% else %}
-                    <span class="badge bg-primary">
-                        Remoto
-                    </span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                <!-- Tabla de Historial -->
+                <div class="table-wrapper">
+                    <div class="table-responsive">
+                        <table class="table" id="historialTable">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-user"></i> Usuario</th>
+                                    <th><i class="fas fa-id-card"></i> UID RFID</th>
+                                    <th><i class="fas fa-door-open"></i> Estado</th>
+                                    <th><i class="fas fa-calendar"></i> Fecha y Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if registros %}
+                                    {% for registro in registros %}
+                                        <tr data-user="{{ registro[3] }}" data-uid="{{ registro[2] }}" data-status="{{ registro[4].lower() }}">
+                                            <td>
+                                                <strong>{{ registro[3] }}</strong>
+                                            </td>
+                                            <td>
+                                                <span class="uid-code">{{ registro[2] }}</span>
+                                            </td>
+                                            <td>
+                                                {% if 'permiti' in registro[4].lower() or 'permitido' in registro[4].lower() %}
+                                                    <span class="access-badge badge-permitido">
+                                                        <i class="fas fa-check-circle"></i> Permitido
+                                                    </span>
+                                                {% elif 'nega' in registro[4].lower() or 'denegado' in registro[4].lower() %}
+                                                    <span class="access-badge badge-denegado">
+                                                        <i class="fas fa-times-circle"></i> Denegado
+                                                    </span>
+                                                {% else %}
+                                                    <span class="access-badge badge-remoto">
+                                                        <i class="fas fa-signal"></i> {{ registro[4] }}
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="time-cell">
+                                                    <div class="time-date">{{ registro[1].split(' ')[0] if ' ' in registro[1] else registro[1] }}</div>
+                                                    <div class="time-hour">{{ registro[1].split(' ')[1] if ' ' in registro[1] else '00:00:00' }}</div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="empty-state">
+                                                <i class="fas fa-inbox"></i>
+                                                <p>No hay registros de acceso</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-</div>
+            </div>
+        </main>
+    </div>
 
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        function filterTable() {
+            const filterNombre = document.getElementById('filterNombre').value.toLowerCase();
+            const filterEstado = document.getElementById('filterEstado').value.toLowerCase();
+            const table = document.getElementById('historialTable');
+            const rows = table.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                const user = row.getAttribute('data-user').toLowerCase();
+                const uid = row.getAttribute('data-uid').toLowerCase();
+                const status = row.getAttribute('data-status');
+
+                const matchName = user.includes(filterNombre) || uid.includes(filterNombre);
+                const matchStatus = !filterEstado || status.includes(filterEstado);
+
+                row.style.display = matchName && matchStatus ? '' : 'none';
+            });
+        }
+    </script>
 </body>
 </html>

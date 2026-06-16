@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Tarjeta RFID - Control RFID</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+            box-shadow: 0 4px 15px rgba(0, 102, 204, 0.2);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .main-content {
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            padding: 50px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .card-title {
+            color: #1a1a1a;
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .icon-reader {
+            font-size: 4rem;
+            color: #0066cc;
+            margin-bottom: 25px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .alert-warning-custom {
+            background: linear-gradient(135deg, #fff3cd 0%, #fffacd 100%);
+            border-left: 4px solid #f39c12;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: #856404;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .alert-warning-custom i {
+            font-size: 1.5rem;
+            color: #f39c12;
+        }
+
+        .uid-display-card {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8eef5 100%);
+            border: 2px dashed #0066cc;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .uid-label {
+            color: #666;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .uid-value {
+            color: #0066cc;
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        .uid-value.waiting {
+            color: #999;
+            font-size: 1.5rem;
+            font-style: italic;
+        }
+
+        .info-text {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-continue {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            padding: 14px 35px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: #e0e0e0;
+            color: #1a1a1a;
+            padding: 14px 35px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-cancel:hover {
+            background-color: #d0d0d0;
+            color: #1a1a1a;
+        }
+
+        .step-indicator {
+            background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            display: inline-block;
+            margin-bottom: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .card-container {
+                padding: 30px 20px;
+            }
+
+            .card-title {
+                font-size: 1.5rem;
+            }
+
+            .icon-reader {
+                font-size: 3rem;
+            }
+
+            .uid-value {
+                font-size: 1.5rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn-continue,
+            .btn-cancel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="container-fluid px-4">
+        <a href="/dashboard" class="navbar-brand">
+            <i class="fas fa-lock"></i> Sistema RFID
+        </a>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="card-container">
+        <div class="step-indicator">
+            <i class="fas fa-step-forward"></i> Paso 1 de 2: Detección de Tarjeta
+        </div>
+
+        <h1 class="card-title">
+            <i class="fas fa-id-card"></i> Registro de Tarjeta RFID
+        </h1>
+
+        <div class="icon-reader">
+            <i class="fas fa-wave-square"></i>
+        </div>
+
+        <div class="alert-warning-custom">
+            <i class="fas fa-hand-paper"></i>
+            <div>Acerque una tarjeta o llavero RFID al lector para detectar su UID</div>
+        </div>
+
+        <div class="uid-display-card">
+            <div class="uid-label">UID Detectado</div>
+            <div id="uidDetectado" class="uid-value waiting">
+                <i class="fas fa-spinner fa-spin"></i> Esperando...
+            </div>
+        </div>
+
+        <p class="info-text">
+            El identificador único (UID) de la tarjeta se mostrará arriba cuando la detectemos.
+        </p>
+
+        <div class="button-group">
+            <a href="/nuevo_usuario" class="btn-continue">
+                <i class="fas fa-arrow-right"></i> Continuar al Registro de Usuario
+            </a>
+            <a href="/dashboard" class="btn-cancel">
+                <i class="fas fa-times"></i> Cancelar
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+fetch('/limpiar_uid');
+
+function obtenerUID() {
+    fetch('/obtener_uid')
+    .then(response => response.json())
+    .then(data => {
+        if(data.uid){
+            const element = document.getElementById("uidDetectado");
+            element.innerText = data.uid;
+            element.classList.remove('waiting');
+        }
+    });
+}
+
+setInterval(obtenerUID, 1000);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
