@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID - Métricas del Sistema</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+            margin-top: 30px;
+        }
+
+        /* Tarjetas */
+        .chart-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all var(--transition-base);
+        }
+
+        .chart-card:hover {
+            border-color: var(--accent-primary);
+        }
+
+        /* Distribución */
+        .chart-card.large {
+            grid-column: span 6;
+        }
+
+        .chart-card:not(.large):not(.wide) {
+            grid-column: span 3;
+        }
+
+        .chart-card.wide {
+            grid-column: 1 / -1;
+        }
+
+        /* Títulos */
+        .chart-title {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-title i {
+            color: var(--accent-primary);
+        }
+
+        /* Gráficos */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .page-actions .btn {
+            border-radius: 8px;
+        }
+        
+        /* Ajuste para el icono del título */
+        .page-title i {
+            color: var(--accent-primary);
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/dashboard" class="sidebar-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>RFID</span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <a href="/dashboard" class="nav-item {% if request.path == '/dashboard' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/usuarios" class="nav-item {% if request.path == '/usuarios' %}active{% endif %}">
+                        <i class="fas fa-users"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Operaciones</div>
+                    <a href="/abrir_puerta" class="nav-item {% if request.path == '/abrir_puerta' %}active{% endif %}">
+                        <i class="fas fa-door-open"></i>
+                        <span>Abrir Puerta</span>
+                    </a>
+                    <a href="/registrar_tarjeta"
+                        class="nav-item {% if request.path == '/registrar_tarjeta' %}active{% endif %}">
+                        <i class="fas fa-id-card"></i>
+                        <span>Registrar Tarjeta</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Reportes</div>
+                    <a href="/historial" class="nav-item {% if request.path == '/historial' %}active{% endif %}">
+                        <i class="fas fa-history"></i>
+                        <span>Historial</span>
+                    </a>
+                    <a href="/auditoria" class="nav-item {% if request.path == '/auditoria' %}active{% endif %}">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Auditoría</span>
+                    </a>
+                    <a href="/metricas" class="nav-item {% if request.path == '/metricas' %}active{% endif %}">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Métricas</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info" style="margin-bottom: var(--spacing-lg);">
+                    <div class="user-avatar" style="width: 100%; height: auto;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <a href="/logout" class="btn btn-secondary btn-block" style="margin: 0;">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <div class="page-title-section">
+                        <h1 class="page-title">
+                            <i class="fas fa-chart-bar"></i> Métricas Analíticas
+                        </h1>
+                        <p class="page-subtitle">
+                            Análisis estadístico de uso y seguridad del control de acceso
+                        </p>
+                    </div>
+                    <div class="page-actions">
+                        <a href="/dashboard" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card large">
+                        <div class="chart-title">
+                            <i class="fas fa-chart-line"></i> Accesos de Hoy por Hora
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartHorasHoy" data-labels='{{ horas_labels | tojson }}'
+                                data-valores='{{ horas_valores | tojson }}'>
+                            </canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <i class="fas fa-chart-pie"></i> Estados de Acceso
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartEstados" data-labels='{{ estados_labels | tojson }}'
+                                data-valores='{{ estados_valores | tojson }}'>
+                            </canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <i class="fas fa-users"></i> Top Usuarios
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartTopUsers" data-labels='{{ top_labels | tojson }}'
+                                data-valores='{{ top_valores | tojson }}'>
+                            </canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card wide">
+                        <div class="chart-title">
+                            <i class="fas fa-calendar-alt"></i> Accesos por Día (Últimos 30 días)
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartDias" data-labels='{{ dias_labels | tojson }}'
+                                data-valores='{{ dias_valores | tojson }}'>
+                            </canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Configuración global para fuentes claras en modo oscuro
+        Chart.defaults.color = '#8a99ad';
+        Chart.defaults.scale.grid.color = 'rgba(35, 45, 66, 0.5)';
+
+        // 1. Gráfico de Horas
+        const canvasHoras = document.getElementById('chartHorasHoy');
+        const horasLabels = JSON.parse(canvasHoras.getAttribute('data-labels'));
+        const horasValores = JSON.parse(canvasHoras.getAttribute('data-valores'));
+
+        new Chart(canvasHoras.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: horasLabels,
+                datasets: [{
+                    label: 'Peticiones',
+                    data: horasValores,
+                    borderColor: '#0055ff',
+                    backgroundColor: 'rgba(0, 85, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // 2. Gráfico de Estados
+        const canvasEstados = document.getElementById('chartEstados');
+        const estadosLabels = JSON.parse(canvasEstados.getAttribute('data-labels'));
+        const estadosValores = JSON.parse(canvasEstados.getAttribute('data-valores'));
+
+        new Chart(canvasEstados.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: estadosLabels,
+                datasets: [{
+                    data: estadosValores,
+                    backgroundColor: ['#00e676', '#ff1744', '#00b0ff', '#ffea00'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // 3. Gráfico Top Usuarios
+        const canvasTop = document.getElementById('chartTopUsers');
+        const topLabels = JSON.parse(canvasTop.getAttribute('data-labels'));
+        const topValores = JSON.parse(canvasTop.getAttribute('data-valores'));
+
+        new Chart(canvasTop.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: topLabels,
+                datasets: [{
+                    label: 'Accesos Registrados',
+                    data: topValores,
+                    backgroundColor: '#00bcd4',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // 4. Gráfico 30 días
+        const canvasDias = document.getElementById('chartDias');
+        const diasLabels = JSON.parse(canvasDias.getAttribute('data-labels'));
+        const diasValores = JSON.parse(canvasDias.getAttribute('data-valores'));
+
+        new Chart(canvasDias.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: diasLabels,
+                datasets: [{
+                    label: 'Accesos',
+                    data: diasValores,
+                    borderColor: '#00e5ff',
+                    backgroundColor: 'rgba(0,229,255,0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    </script>
+</body>
+
+</html>

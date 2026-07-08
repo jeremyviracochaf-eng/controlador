@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -214,11 +215,11 @@
             <nav class="sidebar-nav">
                 <div class="nav-section">
                     <div class="nav-section-title">Principal</div>
-                    <a href="/dashboard" class="nav-item">
+                    <a href="/dashboard" class="nav-item {% if request.path == '/dashboard' %}active{% endif %}">
                         <i class="fas fa-chart-line"></i>
                         <span>Dashboard</span>
                     </a>
-                    <a href="/usuarios" class="nav-item">
+                    <a href="/usuarios" class="nav-item {% if request.path == '/usuarios' %}active{% endif %}">
                         <i class="fas fa-users"></i>
                         <span>Usuarios</span>
                     </a>
@@ -226,11 +227,12 @@
 
                 <div class="nav-section">
                     <div class="nav-section-title">Operaciones</div>
-                    <a href="/abrir_puerta" class="nav-item">
+                    <a href="/abrir_puerta" class="nav-item {% if request.path == '/abrir_puerta' %}active{% endif %}">
                         <i class="fas fa-door-open"></i>
                         <span>Abrir Puerta</span>
                     </a>
-                    <a href="/registrar_tarjeta" class="nav-item active">
+                    <a href="/registrar_tarjeta"
+                        class="nav-item {% if request.path == '/registrar_tarjeta' %}active{% endif %}">
                         <i class="fas fa-id-card"></i>
                         <span>Registrar Tarjeta</span>
                     </a>
@@ -238,18 +240,27 @@
 
                 <div class="nav-section">
                     <div class="nav-section-title">Reportes</div>
-                    <a href="/historial" class="nav-item">
+                    <a href="/historial" class="nav-item {% if request.path == '/historial' %}active{% endif %}">
                         <i class="fas fa-history"></i>
                         <span>Historial</span>
                     </a>
-                    <a href="/auditoria" class="nav-item">
+                    <a href="/auditoria" class="nav-item {% if request.path == '/auditoria' %}active{% endif %}">
                         <i class="fas fa-clipboard-list"></i>
                         <span>Auditoría</span>
+                    </a>
+                    <a href="/metricas" class="nav-item {% if request.path == '/metricas' %}active{% endif %}">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Métricas</span>
                     </a>
                 </div>
             </nav>
 
             <div class="sidebar-footer">
+                <div class="user-info" style="margin-bottom: var(--spacing-lg);">
+                    <div class="user-avatar" style="width: 100%; height: auto;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
                 <a href="/logout" class="btn btn-secondary btn-block" style="margin: 0;">
                     <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                 </a>
@@ -279,6 +290,25 @@
                             <i class="fas fa-circle-1"></i> Paso 1 de 2
                         </span>
 
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }}"
+                            style="margin-top: var(--spacing-md); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 8px;">
+                            {% if category == 'success' %}
+                            <i class="fas fa-check-circle" style="color: #34d399;"></i>
+                            {% elif category == 'warning' %}
+                            <i class="fas fa-exclamation-triangle" style="color: #fbbf24;"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle" style="color: #f87171;"></i>
+                            {% endif %}
+                            <span class="alert-message" style="font-size: 0.95rem; font-weight: 500;">{{ message
+                                }}</span>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+
                         <div class="card-icon">
                             <i class="fas fa-rf-wave"></i>
                         </div>
@@ -307,18 +337,14 @@
                             </div>
                         </div>
 
-                        <form id="registerForm" action="/actualizar_rfid_usuario" method="POST" style="text-align: left;">
+                        <form id="registerForm" action="/actualizar_rfid_usuario" method="POST"
+                            style="text-align: left;">
                             <div class="form-group">
                                 <label for="uid" class="form-label">
                                     <i class="fas fa-id-card"></i> UID RFID (Manual)
                                 </label>
-                                <input
-                                    type="text"
-                                    id="uid"
-                                    name="uid"
-                                    class="form-control"
-                                    placeholder="Si no se detecta automáticamente, ingréselo aquí"
-                                    required>
+                                <input type="text" id="uid" name="uid" class="form-control"
+                                    placeholder="Si no se detecta automáticamente, ingréselo aquí" required>
                             </div>
 
                             <span class="step-badge">
@@ -329,12 +355,15 @@
                                 <label for="usuario_id" class="form-label">
                                     <i class="fas fa-user"></i> Seleccionar Usuario
                                 </label>
-                                <select id="usuario_id" name="usuario_id" class="form-select" required>
+                                <!-- CAMBIO: Cambiamos name="usuario_id" por name="id" -->
+                                <select id="usuario_id" name="id" class="form-select" required>
                                     <option value="">-- Seleccione un usuario --</option>
                                     {% for usuario in usuarios %}
-                                        <option value="{{ usuario[0] }}" {% if usuario[0] == usuario_seleccionado %}selected{% endif %}>
-                                            {{ usuario[1] }}
-                                        </option>
+                                    <!-- Si tu consulta SQL de la vista devuelve tuplas, usuario[0] es el id y usuario[1] el nombre -->
+                                    <option value="{{ usuario[0] }}" {% if usuario[0]==usuario_seleccionado %}selected{%
+                                        endif %}>
+                                        {{ usuario[1] }}
+                                    </option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -359,43 +388,70 @@
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 
     <script>
-        // WebSocket para lectura RFID en tiempo real
+        // ==========================================
+        // CONEXIÓN WEBSOCKET (TIEMPO REAL PRO)
+        // ==========================================
         const socket = io();
 
-        socket.on('rfid_detectado', function(data) {
+        // 1. Captura de UID en tiempo real (Registro de tarjetas)
+        socket.on('rfid_detectado', function (data) {
             const uidValue = document.getElementById('uidValue');
             const uidInput = document.getElementById('uid');
 
-            uidValue.textContent = data.uid;
-            uidValue.classList.remove('waiting');
-            uidInput.value = data.uid;
+            if (uidValue && uidInput) {
+                uidValue.textContent = data.uid;
+                uidValue.classList.remove('waiting');
+                uidInput.value = data.uid;
 
-            // Mostrar confirmación visual
-            uidValue.style.color = 'var(--accent-secondary)';
-            setTimeout(() => {
-                uidValue.style.color = 'var(--accent-primary)';
-            }, 1000);
+                // Animación y confirmación visual
+                uidValue.style.color = 'var(--accent-secondary)';
+                setTimeout(() => {
+                    uidValue.style.color = 'var(--accent-primary)';
+                }, 1000);
+            }
         });
 
-        // Validación de formulario
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            const uid = document.getElementById('uid').value.trim();
-            const usuarioId = document.getElementById('usuario_id').value;
-
-            if (!uid) {
-                e.preventDefault();
-                showAlert('Por favor ingrese o detecte el UID RFID', 'danger');
-                return false;
+        // 2. Escuchar Eventos de Validación Física (Logs interactivos)
+        socket.on("validacion", function (data) {
+            if (data.autorizado) {
+                showAlert(`Acceso permitido: ${data.usuario || 'Usuario'}`, "success");
+            } else {
+                showAlert("Acceso denegado (Tarjeta no registrada)", "danger");
             }
-
-            if (!usuarioId) {
-                e.preventDefault();
-                showAlert('Por favor seleccione un usuario', 'danger');
-                return false;
-            }
-
-            return true;
         });
+
+        // 3. Escuchar Eventos de Control de Puerta
+        socket.on("puerta", function (data) {
+            console.log("Acción remota de puerta:", data.accion);
+            // Aquí puedes disparar cualquier otra función visual de tu UI si lo deseas
+        });
+
+
+        // ==========================================
+        // VALIDACIÓN DE FORMULARIO LOCAL
+        // ==========================================
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) {
+            registerForm.addEventListener('submit', function (e) {
+                const uid = document.getElementById('uid').value.trim();
+                const usuarioId = document.getElementById('usuario_id').value;
+
+                if (!uid) {
+                    e.preventDefault();
+                    showAlert('Por favor ingrese o detecte el UID RFID', 'danger');
+                    return false;
+                }
+
+                if (!usuarioId) {
+                    e.preventDefault();
+                    showAlert('Por favor seleccione un usuario', 'danger');
+                    return false;
+                }
+
+                return true;
+            });
+        }
     </script>
 </body>
+
 </html>

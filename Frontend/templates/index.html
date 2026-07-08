@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -205,6 +206,10 @@
                         <i class="fas fa-clipboard-list"></i>
                         <span>Auditoría</span>
                     </a>
+                    <a href="/metricas" class="nav-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Métricas</span>
+                    </a>
                 </div>
             </nav>
 
@@ -241,21 +246,36 @@
                     </div>
                 </div>
 
-                <!-- Alertas Flash -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-success animate-fade-in" style="margin-bottom: var(--spacing-lg);">
-                                <div class="alert-icon">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                                <div class="alert-content">
-                                    <div class="alert-message">{{ message }}</div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+                <!-- Banner de Último Evento en Tiempo Real -->
+                {% if ultimo_acceso %}
+                {% set acceso_ok = ultimo_acceso[1] == 'Permitido' or ultimo_acceso[1] == 'Remoto' %}
+
+                <div class="alert {{ 'alert-success' if acceso_ok else 'alert-danger' }} animate-fade-in"
+                    style="margin-bottom: var(--spacing-lg);">
+                    <div class="alert-icon">
+                        {% if ultimo_acceso[1] == 'Permitido' or ultimo_acceso[1] == 'Remoto' %}
+                        <i class="fas fa-door-open" style="color: #2ecc71;"></i>
+                        {% else %}
+                        <i class="fas fa-user-shield" style="color: #e74c3c;"></i>
+                        {% endif %}
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-message" style="font-weight: 500;">
+                            {% if ultimo_acceso[1] == 'Remoto' %}
+                            🚪 <strong>Acceso Remoto:</strong> El Administrador abrió la puerta desde la Web.
+                            {% elif ultimo_acceso[1] == 'Permitido' %}
+                            ✅ <strong>Acceso Permitido:</strong> {{ ultimo_acceso[2] }} ingresó al sistema.
+                            {% else %}
+                            ❌ <strong>Acceso Denegado:</strong> {{ ultimo_acceso[2] }} intentó ingresar sin
+                            autorización.
+                            {% endif %}
+                        </div>
+                        <small style="opacity: 0.75; font-size: 0.85rem; display: block; margin-top: 4px;">
+                            <i class="far fa-clock"></i> Último movimiento registrado: {{ ultimo_acceso[0] }}
+                        </small>
+                    </div>
+                </div>
+                {% endif %}
 
                 <!-- KPI Cards -->
                 <div class="grid grid-cols-3 mb-lg">
@@ -303,32 +323,45 @@
 
                 <!-- Acciones Rápidas -->
                 <div class="quick-actions">
-                    <a href="/usuarios" class="card animate-fade-in" style="cursor: pointer; text-decoration: none; color: inherit; transition: all var(--transition-base);">
+                    <a href="/usuarios" class="card animate-fade-in"
+                        style="cursor: pointer; text-decoration: none; color: inherit; transition: all var(--transition-base);">
                         <div style="text-align: center;">
-                            <div style="font-size: 2rem; color: var(--accent-primary); margin-bottom: var(--spacing-md);">
+                            <div
+                                style="font-size: 2rem; color: var(--accent-primary); margin-bottom: var(--spacing-md);">
                                 <i class="fas fa-users"></i>
                             </div>
-                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--spacing-sm);">Gestionar Usuarios</div>
-                            <div style="font-size: 0.85rem; color: var(--text-tertiary);">Crear, editar y eliminar usuarios</div>
+                            <div
+                                style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--spacing-sm);">
+                                Gestionar Usuarios</div>
+                            <div style="font-size: 0.85rem; color: var(--text-tertiary);">Crear, editar y eliminar
+                                usuarios</div>
                         </div>
                     </a>
 
-                    <a href="/registrar_tarjeta" class="card animate-fade-in" style="cursor: pointer; text-decoration: none; color: inherit; transition: all var(--transition-base); animation-delay: 0.1s;">
+                    <a href="/registrar_tarjeta" class="card animate-fade-in"
+                        style="cursor: pointer; text-decoration: none; color: inherit; transition: all var(--transition-base); animation-delay: 0.1s;">
                         <div style="text-align: center;">
-                            <div style="font-size: 2rem; color: var(--accent-warning); margin-bottom: var(--spacing-md);">
+                            <div
+                                style="font-size: 2rem; color: var(--accent-warning); margin-bottom: var(--spacing-md);">
                                 <i class="fas fa-id-card"></i>
                             </div>
-                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--spacing-sm);">Registrar Tarjeta</div>
-                            <div style="font-size: 0.85rem; color: var(--text-tertiary);">Emparejar RFID con usuario</div>
+                            <div
+                                style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--spacing-sm);">
+                                Registrar Tarjeta</div>
+                            <div style="font-size: 0.85rem; color: var(--text-tertiary);">Emparejar RFID con usuario
+                            </div>
                         </div>
                     </a>
 
-                    <a href="/historial" class="card animate-fade-in" style="cursor: pointer; text-decoration: none; color: inherit; transition: all var(--transition-base); animation-delay: 0.2s;">
+                    <a href="/historial" class="card animate-fade-in"
+                        style="cursor: pointer; text-decoration: none; color: inherit; transition: all var(--transition-base); animation-delay: 0.2s;">
                         <div style="text-align: center;">
                             <div style="font-size: 2rem; color: var(--accent-info); margin-bottom: var(--spacing-md);">
                                 <i class="fas fa-history"></i>
                             </div>
-                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--spacing-sm);">Historial</div>
+                            <div
+                                style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--spacing-sm);">
+                                Historial</div>
                             <div style="font-size: 0.85rem; color: var(--text-tertiary);">Ver registros de acceso</div>
                         </div>
                     </a>
@@ -340,20 +373,21 @@
                         <i class="fas fa-recent-history"></i> Último Acceso Registrado
                     </div>
                     {% if ultimo_acceso %}
-                        <div class="activity-item">
-                            <div class="activity-icon success">
-                                <i class="fas fa-check"></i>
-                            </div>
-                            <div class="activity-details">
-                                <div class="activity-title">{{ ultimo_acceso[0] }}</div>
-                                <div class="activity-time"><strong>{{ ultimo_acceso[1] }}</strong></div>
-                            </div>
+                    <div class="activity-item">
+                        <div class="activity-icon success">
+                            <i class="fas fa-check"></i>
                         </div>
+                        <div class="activity-details">
+                            <div class="activity-title">{{ ultimo_acceso[0] }}</div>
+                            <div class="activity-time"><strong>{{ ultimo_acceso[1] }}</strong></div>
+                        </div>
+                    </div>
                     {% else %}
-                        <div class="no-activity">
-                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
-                            <p>Sin registros disponibles</p>
-                        </div>
+                    <div class="no-activity">
+                        <i class="fas fa-inbox"
+                            style="font-size: 2rem; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                        <p>Sin registros disponibles</p>
+                    </div>
                     {% endif %}
                 </div>
 
@@ -369,10 +403,10 @@
         // WebSocket para estado de puerta en tiempo real
         const socket = io();
 
-        socket.on('cambio_puerta', function(data) {
+        socket.on('cambio_puerta', function (data) {
             const elemento = document.getElementById("estadoPuerta");
             const doorStatus = document.querySelector('.door-status');
-            
+
             if (data.estado === "Desbloqueada") {
                 elemento.innerHTML = "🔓 Desbloqueada";
                 doorStatus.classList.add('active');
@@ -385,4 +419,5 @@
     </script>
 
 </body>
+
 </html>

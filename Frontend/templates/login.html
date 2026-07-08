@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -181,6 +182,47 @@
                 font-size: 1.5rem;
             }
         }
+
+        /* ================= ALERTA LOGIN ================= */
+
+        .alert-error {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: var(--spacing-lg);
+
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-left: 4px solid #ef4444;
+            border-radius: 10px;
+
+            color: #fca5a5;
+            font-size: .92rem;
+            font-weight: 500;
+
+            animation: alertFade .35s ease;
+        }
+
+        .alert-error i {
+            color: #ef4444;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        @keyframes alertFade {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -195,6 +237,17 @@
                 <p class="login-subtitle">Sistema RFID Avanzado</p>
             </div>
 
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert-error">
+                <i class="fas fa-circle-exclamation"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+            
             <form action="/login" method="POST" class="login-form">
                 <div class="form-group">
                     <label for="usuario" class="form-label">
@@ -202,14 +255,8 @@
                     </label>
                     <div class="form-input-group">
                         <i class="fas fa-user form-input-icon"></i>
-                        <input
-                            type="text"
-                            id="usuario"
-                            name="usuario"
-                            class="form-control"
-                            placeholder="Ingrese su usuario"
-                            required
-                            autofocus>
+                        <input type="text" id="usuario" name="usuario" class="form-control"
+                            placeholder="Ingrese su usuario" required autofocus>
                     </div>
                 </div>
 
@@ -219,13 +266,8 @@
                     </label>
                     <div class="form-input-group">
                         <i class="fas fa-lock form-input-icon"></i>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            class="form-control"
-                            placeholder="Ingrese su contraseña"
-                            required>
+                        <input type="password" id="password" name="password" class="form-control"
+                            placeholder="Ingrese su contraseña" required>
                     </div>
                 </div>
 
@@ -242,4 +284,5 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
+
 </html>
