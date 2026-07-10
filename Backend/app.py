@@ -35,9 +35,12 @@ app.secret_key = os.getenv("SECRET_KEY")
 # Conexión segura a MySQL usando variables de entorno locales
 conexion = mysql.connector.connect(
     host=os.getenv("DB_HOST"),
+    port=int(os.getenv("DB_PORT")),
     user=os.getenv("DB_USER"),
     password=os.getenv("DB_PASSWORD"),
-    database=os.getenv("DB_DATABASE")
+    database=os.getenv("DB_DATABASE"),
+
+    ssl_disabled=False
 )
 
 # --- ARQUITECTURA DE ESTADO GLOBAL CORREGIDA ---
