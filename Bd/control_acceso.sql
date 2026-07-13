@@ -55,3 +55,6 @@ CREATE TABLE auditoria (
     accion VARCHAR(100) NOT NULL,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+INSERT INTO administradores (usuario, password) 
+VALUES ('admin', 'scrypt:32768:8:1$pSkP7KU5vZp0eYqK$8a32bb889e072942a555df1cb53b7e9ae1d43b081d576592d05eabcc39d25ded587c52cd6e8e065411aa303301f7ac34366cd45fab386ba91eac7874ed830906');
