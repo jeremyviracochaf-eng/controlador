@@ -287,23 +287,27 @@
                 <div class="card-wrapper">
                     <div class="card-container animate-fade-in">
                         <span class="step-badge">
-                            <i class="fas fa-circle-1"></i> Paso 1 de 2
+                            <i class="fas fa-circle-1"></i> Paso 2 de 2
                         </span>
 
-                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% with messages = get_flashed_messages(with_categories=true, category_filter=["registro_success", "registro_warning",
+                        "registro_danger"]) %}
                         {% if messages %}
                         {% for category, message in messages %}
-                        <div class="alert alert-{{ category if category != 'error' else 'danger' }}"
+                        <!-- Extraemos el tipo de alerta real (success, warning, danger) quitando el prefijo 'registro_' -->
+                        {% set alert_type = category.replace('registro_', '') %}
+                        <div class="alert alert-{{ alert_type if alert_type != 'error' else 'danger' }}"
                             style="margin-top: var(--spacing-md); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 8px;">
-                            {% if category == 'success' %}
+                        
+                            {% if alert_type == 'success' %}
                             <i class="fas fa-check-circle" style="color: #34d399;"></i>
-                            {% elif category == 'warning' %}
+                            {% elif alert_type == 'warning' %}
                             <i class="fas fa-exclamation-triangle" style="color: #fbbf24;"></i>
                             {% else %}
                             <i class="fas fa-times-circle" style="color: #f87171;"></i>
                             {% endif %}
-                            <span class="alert-message" style="font-size: 0.95rem; font-weight: 500;">{{ message
-                                }}</span>
+                        
+                            <span class="alert-message" style="font-size: 0.95rem; font-weight: 500;">{{ message }}</span>
                         </div>
                         {% endfor %}
                         {% endif %}
@@ -369,7 +373,7 @@
                             </div>
 
                             <div class="form-actions">
-                                <a href="/dashboard" class="btn btn-secondary">
+                                <a href="/usuarios" class="btn btn-secondary">
                                     <i class="fas fa-times"></i> Cancelar
                                 </a>
                                 <button type="submit" class="btn btn-success">

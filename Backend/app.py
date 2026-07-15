@@ -500,7 +500,7 @@ def actualizar_rfid_usuario():
 
     # Validación rápida por si envían el campo completamente vacío o con guiones
     if not nuevo_uid or nuevo_uid == "—" or nuevo_uid == "":
-        flash("Error: El código de tarjeta no es válido o está vacío.", "warning")
+        flash("Error: El código de tarjeta no es válido o está vacío.", "registro_warning")
         return redirect("/registrar_tarjeta")
 
     cursor = conexion.cursor()
@@ -519,7 +519,7 @@ def actualizar_rfid_usuario():
 
         if usuario_existente:
             # Si ya existe en otro id, enviamos la advertencia limpia y volvemos a la pestaña de registro
-            flash(f"Advertencia: El UID ya está registrado a nombre de {usuario_existente[1]} (ID: {usuario_existente[0]}).", "warning")
+            flash(f"Advertencia: El UID ya está registrado a nombre de {usuario_existente[1]} (ID: {usuario_existente[0]}).", "registro_warning")
             return redirect("/registrar_tarjeta")
 
         # 3. PROCESO DE ACTUALIZACIÓN SEGURO (Cambiamos el UID y ponemos al usuario como Activo '1')
@@ -543,7 +543,7 @@ def actualizar_rfid_usuario():
         
         conexion.commit()
         flash("Tarjeta RFID vinculada correctamente al usuario.", "success")
-        return redirect("/registrar_tarjeta")  # Se queda en la misma pestaña mostrando el éxito limpio
+        return redirect("/usuarios")  # Se queda en la misma pestaña mostrando el éxito limpio
 
     except mysql.connector.Error as err:
         conexion.rollback()
