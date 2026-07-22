@@ -281,11 +281,16 @@
                 <div class="grid grid-cols-3 mb-lg">
                     <div class="card stat-card animate-fade-in">
                         <div class="stat-label">
-                            <i class="fas fa-users"></i> Total de Usuarios
+                            <i class="fas fa-users"></i> Usuarios Activos
                         </div>
-                        <div class="stat-value">{{ total_usuarios }}</div>
+
+                        <div class="stat-value">
+                            {{ usuarios_activos }}
+                        </div>
+
                         <div class="stat-change positive" style="margin-top: auto;">
-                            <i class="fas fa-arrow-up"></i> Activos
+                            <i class="fas fa-user-slash"></i>
+                            {{ usuarios_eliminados }} eliminados
                         </div>
                     </div>
 

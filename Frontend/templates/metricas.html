@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
     <style>
         .charts-grid {
@@ -32,11 +33,11 @@
 
         /* Distribución */
         .chart-card.large {
-            grid-column: span 6;
+            grid-column: 1 / -1;
         }
 
         .chart-card:not(.large):not(.wide) {
-            grid-column: span 3;
+            grid-column: span 6;
         }
 
         .chart-card.wide {
@@ -81,6 +82,16 @@
         .page-title i {
             color: var(--accent-primary);
             margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .chart-card:not(.large):not(.wide) {
+                grid-column: 1 / -1;
+            }
+
+            .chart-container {
+                height: 280px;
+            }
         }
     </style>
 </head>
@@ -220,7 +231,8 @@
     <script>
         // Configuración global para fuentes claras en modo oscuro
         Chart.defaults.color = '#8a99ad';
-        Chart.defaults.scale.grid.color = 'rgba(35, 45, 66, 0.5)';
+        Chart.defaults.scale.grid.color = 'rgba(138, 153, 173, 0.22)';
+        Chart.defaults.scale.border.color = 'rgba(138, 153, 173, 0.4)';
 
         // 1. Gráfico de Horas
         const canvasHoras = document.getElementById('chartHorasHoy');
@@ -232,15 +244,31 @@
             data: {
                 labels: horasLabels,
                 datasets: [{
-                    label: 'Peticiones',
+                    label: 'Accesos',
                     data: horasValores,
                     borderColor: '#0055ff',
                     backgroundColor: 'rgba(0, 85, 255, 0.1)',
                     fill: true,
-                    tension: 0.4
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#00b0ff',
+                    pointBorderColor: '#07111f',
+                    pointBorderWidth: 2
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                plugins: {
+                    datalabels: {
+                        color: '#dbe7f5', anchor: 'end', align: 'top',
+                        font: { weight: '600' }, formatter: value => value
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
         });
 
         // 2. Gráfico de Estados
@@ -254,11 +282,21 @@
                 labels: estadosLabels,
                 datasets: [{
                     data: estadosValores,
-                    backgroundColor: ['#00e676', '#ff1744', '#00b0ff', '#ffea00'],
+                    backgroundColor: ['#00e676', '#ff1744', '#00b0ff'],
                     borderWidth: 0
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    datalabels: {
+                        color: '#ffffff', font: { weight: '700' },
+                        formatter: value => value || ''
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
         });
 
         // 3. Gráfico Top Usuarios
@@ -281,8 +319,21 @@
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
-            }
+                 layout: {
+                    padding: {
+                        right: 30
+                    }
+                },
+                scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        color: '#dbe7f5', anchor: 'end', align: 'right',
+                        font: { weight: '700' }, formatter: value => value
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
         });
 
         // 4. Gráfico 30 días
@@ -300,13 +351,26 @@
                     borderColor: '#00e5ff',
                     backgroundColor: 'rgba(0,229,255,0.1)',
                     fill: true,
-                    tension: 0.4
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#00e5ff',
+                    pointBorderColor: '#07111f',
+                    pointBorderWidth: 2
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false
-            }
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                plugins: {
+                    datalabels: {
+                        color: '#dbe7f5', anchor: 'end', align: 'top',
+                        font: { weight: '600' }, formatter: value => value
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
         });
     </script>
 </body>

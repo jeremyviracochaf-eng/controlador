@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import date, timedelta
 from flask import (
     Flask,
     request,
@@ -138,9 +139,25 @@ def dashboard():
 
     cursor = conexion.cursor()
 
-    # Total usuarios registrados
-    cursor.execute("SELECT COUNT(*) FROM usuarios")
-    total_usuarios = cursor.fetchone()[0]
+    # Usuarios activos
+    cursor.execute(
+        """
+       SELECT COUNT(*)
+       FROM usuarios
+        WHERE estado = 1
+        """
+    )
+    usuarios_activos = cursor.fetchone()[0]
+
+# Usuarios eliminados
+    cursor.execute(
+        """
+        SELECT COUNT(*)
+        FROM usuarios
+        WHERE estado = 2
+        """
+    )
+    usuarios_eliminados = cursor.fetchone()[0]
 
     # Contadores de accesos permitidos
     cursor.execute(
@@ -185,12 +202,13 @@ def dashboard():
     cursor.close()
 
     return render_template(
-        "index.html",
-        total_usuarios=total_usuarios,
-        permitidos=permitidos,
-        denegados=denegados,
-        ultimo_acceso=ultimo_acceso
-    )
+    "index.html",
+    usuarios_activos=usuarios_activos,
+    usuarios_eliminados=usuarios_eliminados,
+    permitidos=permitidos,
+    denegados=denegados,
+    ultimo_acceso=ultimo_acceso
+)
 
 
 # ==============================================================================
@@ -502,6 +520,15 @@ def actualizar_rfid_usuario():
     if not nuevo_uid or nuevo_uid == "—" or nuevo_uid == "":
         flash("Error: El código de tarjeta no es válido o está vacío.", "registro_warning")
         return redirect("/registrar_tarjeta")
+
+    estados_labels = ["Permitido", "Denegado", "Remoto"]
+    estados_valores = [0, 0, 0]
+    horas_labels = [f"{hora:02d}:00" for hora in range(24)]
+    horas_valores = [0] * 24
+    top_labels, top_valores = [], []
+    fechas_30_dias = [date.today() - timedelta(days=desplazamiento) for desplazamiento in range(29, -1, -1)]
+    dias_labels = [fecha.strftime("%d %b") for fecha in fechas_30_dias]
+    dias_valores = [0] * 30
 
     cursor = conexion.cursor()
 
