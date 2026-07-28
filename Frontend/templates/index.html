@@ -279,21 +279,24 @@
 
                 <!-- KPI Cards -->
                 <div class="grid grid-cols-3 mb-lg">
+                    <!-- Card 1: Usuarios Activos -->
                     <div class="card stat-card animate-fade-in">
                         <div class="stat-label">
                             <i class="fas fa-users"></i> Usuarios Activos
                         </div>
 
-                        <div class="stat-value">
+                        <div class="stat-value" style="color: var(--accent-primary, #3b82f6);">
                             {{ usuarios_activos }}
                         </div>
 
-                        <div class="stat-change positive" style="margin-top: auto;">
+                        <!-- Cambio: Color azul coincidente con el número -->
+                        <div class="stat-change" style="margin-top: auto; color: var(--accent-primary, #3b82f6);">
                             <i class="fas fa-user-slash"></i>
                             {{ usuarios_eliminados }} eliminados
                         </div>
                     </div>
 
+                    <!-- Card 2: Accesos Permitidos -->
                     <div class="card stat-card animate-fade-in" style="animation-delay: 0.1s;">
                         <div class="stat-label">
                             <i class="fas fa-check-circle"></i> Accesos Permitidos
@@ -304,13 +307,15 @@
                         </div>
                     </div>
 
+                    <!-- Card 3: Accesos Denegados -->
                     <div class="card stat-card animate-fade-in" style="animation-delay: 0.2s;">
                         <div class="stat-label">
                             <i class="fas fa-times-circle"></i> Accesos Denegados
                         </div>
                         <div class="stat-value" style="color: var(--accent-danger);">{{ denegados }}</div>
                         <div class="stat-change negative" style="margin-top: auto;">
-                            <i class="fas fa-alert-circle"></i> Advertencia
+                            <!-- Cambio: Icono de advertencia corregido -->
+                            <i class="fas fa-exclamation-triangle"></i> Advertencia
                         </div>
                     </div>
                 </div>

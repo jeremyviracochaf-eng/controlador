@@ -55,6 +55,8 @@ ultimo_uid = ""
 ultimo_tiempo_uid = 0
 
 
+
+
 # ==============================================================================
 # VISTAS PÚBLICAS / ACCESO
 # ==============================================================================
@@ -149,7 +151,7 @@ def dashboard():
     )
     usuarios_activos = cursor.fetchone()[0]
 
-# Usuarios eliminados
+    # Usuarios eliminados
     cursor.execute(
         """
         SELECT COUNT(*)
@@ -159,22 +161,23 @@ def dashboard():
     )
     usuarios_eliminados = cursor.fetchone()[0]
 
-    # Contadores de accesos permitidos
+    # Contadores de accesos permitidos del día actual
     cursor.execute(
         """
         SELECT COUNT(*)
         FROM accesos
-        WHERE estado_acceso='Permitido'
+        WHERE estado_acceso = 'Permitido' 
+          AND DATE(fecha_hora) = CURDATE()
         """
     )
     permitidos = cursor.fetchone()[0]
 
-    # Contadores de accesos denegados
     cursor.execute(
         """
         SELECT COUNT(*)
         FROM accesos
-        WHERE estado_acceso='Denegado'
+        WHERE estado_acceso = 'Denegado'
+          AND DATE(fecha_hora) = CURDATE()
         """
     )
     denegados = cursor.fetchone()[0]
@@ -611,32 +614,54 @@ def metricas_page():
     if "usuario" not in session:
         return redirect("/")
 
+    fecha = request.args.get("fecha")
+
     cursor = conexion.cursor()
 
     try:
         # 1. Datos para gráfico de Rosca (Distribución de estados de acceso)
-        cursor.execute(
-            """
-            SELECT estado_acceso, COUNT(*) 
-            FROM accesos 
-            GROUP BY estado_acceso
-            """
-        )
+        if fecha:
+            cursor.execute("""
+                SELECT estado_acceso, COUNT(*)
+                FROM accesos
+                WHERE DATE(fecha_hora) = %s
+                GROUP BY estado_acceso
+            """, (fecha,))
+        else:
+            cursor.execute("""
+                SELECT estado_acceso, COUNT(*)
+                FROM accesos
+                GROUP BY estado_acceso
+            """)
+
         datos_estados = cursor.fetchall()
-        # Si el estado viene vacío o nulo, lo nombramos como 'Remoto / Otro'
+
+        # Si el estado viene vacío o nulo, lo nombramos como 'Remoto'
         estados_labels = [row[0] if row[0] else "Remoto" for row in datos_estados]
         estados_valores = [row[1] for row in datos_estados]
 
-        # 2. Datos para flujo por horas (Hoy por hora - ACTUALIZADO)
-        cursor.execute(
-            """
-            SELECT HOUR(fecha_hora) AS hora, COUNT(*)
-            FROM accesos
-            WHERE DATE(fecha_hora) = CURDATE()
-            GROUP BY HOUR(fecha_hora)
-            ORDER BY hora ASC
-            """
-        )
+        # 2. Datos para flujo por horas (usa la misma fecha seleccionada si existe)
+        if fecha:
+            cursor.execute(
+                """
+                SELECT HOUR(fecha_hora) AS hora, COUNT(*)
+                FROM accesos
+                WHERE DATE(fecha_hora) = %s
+                GROUP BY HOUR(fecha_hora)
+                ORDER BY hora ASC
+                """,
+                (fecha,)
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT HOUR(fecha_hora) AS hora, COUNT(*)
+                FROM accesos
+                WHERE DATE(fecha_hora) = CURDATE()
+                GROUP BY HOUR(fecha_hora)
+                ORDER BY hora ASC
+                """
+            )
         datos_horas = cursor.fetchall()
         horas_labels = [f"{row[0]}:00" for row in datos_horas]
         horas_valores = [row[1] for row in datos_horas]
@@ -681,6 +706,7 @@ def metricas_page():
 
     return render_template(
         "metricas.html",
+        fecha=fecha,
         estados_labels=estados_labels,
         estados_valores=estados_valores,
         horas_labels=horas_labels,

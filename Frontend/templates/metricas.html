@@ -192,8 +192,17 @@
                     </div>
 
                     <div class="chart-card">
-                        <div class="chart-title">
-                            <i class="fas fa-chart-pie"></i> Estados de Acceso
+                        <div class="chart-title d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-chart-pie"></i> Estados de Acceso
+                            </span>
+                        
+                            <form method="GET" action="/metricas" class="d-flex align-items-center">
+                                <input type="date" name="fecha" value="{{ fecha }}" class="form-control form-control-sm me-2">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </form>
                         </div>
                         <div class="chart-container">
                             <canvas id="chartEstados" data-labels='{{ estados_labels | tojson }}'
@@ -275,6 +284,12 @@
         const canvasEstados = document.getElementById('chartEstados');
         const estadosLabels = JSON.parse(canvasEstados.getAttribute('data-labels'));
         const estadosValores = JSON.parse(canvasEstados.getAttribute('data-valores'));
+        const estadosColores = estadosLabels.map(label => {
+            if (label === 'Denegado') return '#ff1744';
+            if (label === 'Permitido') return '#00e676';
+            if (label === 'Remoto') return '#00b0ff';
+            return '#8a99ad';
+        });
 
         new Chart(canvasEstados.getContext('2d'), {
             type: 'doughnut',
@@ -282,7 +297,7 @@
                 labels: estadosLabels,
                 datasets: [{
                     data: estadosValores,
-                    backgroundColor: ['#00e676', '#ff1744', '#00b0ff'],
+                    backgroundColor: estadosColores,
                     borderWidth: 0
                 }]
             },

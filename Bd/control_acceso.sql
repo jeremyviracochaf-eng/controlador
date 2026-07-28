@@ -65,7 +65,8 @@ CREATE TABLE `administradores` (
 
 LOCK TABLES `administradores` WRITE;
 /*!40000 ALTER TABLE `administradores` DISABLE KEYS */;
-INSERT INTO `administradores` VALUES (1,'admin','admin123');
+INSERT INTO `administradores` VALUES (1,'admin','Tu_contraseña_segura_hash_aquí');
+
 /*!40000 ALTER TABLE `administradores` ENABLE KEYS */;
 UNLOCK TABLES;
 
