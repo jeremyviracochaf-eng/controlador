@@ -14,7 +14,6 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
 --
 -- Table structure for table `accesos`
 --
@@ -65,7 +64,8 @@ CREATE TABLE `administradores` (
 
 LOCK TABLES `administradores` WRITE;
 /*!40000 ALTER TABLE `administradores` DISABLE KEYS */;
-INSERT INTO `administradores` VALUES (1,'admin','Tu_contraseña_segura_hash_aquí');
+INSERT INTO `administradores` VALUES (1,'admin','scrypt:32768:8:1$pSkP7KU5vZp0eYqK$8a32bb889e072942a555df1cb53b7e9ae1d43b081d576592d05eabcc39d25ded587c52cd6e8e065411aa303301f7ac34366cd45fab386ba91eac7874ed830906');
+
 
 /*!40000 ALTER TABLE `administradores` ENABLE KEYS */;
 UNLOCK TABLES;

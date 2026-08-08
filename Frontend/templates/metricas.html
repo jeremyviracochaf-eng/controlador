@@ -72,10 +72,48 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: var(--spacing-xl);
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
         .page-actions .btn {
             border-radius: 8px;
+        }
+
+        .page-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .page-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .date-filter form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .date-filter input[type="date"] {
+            min-width: 150px;
         }
         
         /* Ajuste para el icono del título */
@@ -165,24 +203,37 @@
             <div class="content-area">
                 <div class="page-header">
                     <div class="page-title-section">
-                        <h1 class="page-title">
-                            <i class="fas fa-chart-bar"></i> Métricas Analíticas
-                        </h1>
+                        <div class="page-title-row">
+                            <h1 class="page-title">
+                                <i class="fas fa-chart-bar"></i> Métricas Analíticas
+                            </h1>
+                        </div>
                         <p class="page-subtitle">
                             Análisis estadístico de uso y seguridad del control de acceso
                         </p>
                     </div>
-                    <div class="page-actions">
+                    <div class="page-header-actions">
+                        <div class="date-filter">
+                            <span>📅 Fecha:</span>
+                            <form method="GET" action="/metricas">
+                                <input type="date" name="fecha" value="{{ fecha }}" class="form-control form-control-sm">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="page-actions">
                         <a href="/dashboard" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Volver
                         </a>
+                        </div>
                     </div>
                 </div>
 
                 <div class="charts-grid">
                     <div class="chart-card large">
                         <div class="chart-title">
-                            <i class="fas fa-chart-line"></i> Accesos de Hoy por Hora
+                            <i class="fas fa-chart-line"></i> Accesos por Hora
                         </div>
                         <div class="chart-container">
                             <canvas id="chartHorasHoy" data-labels='{{ horas_labels | tojson }}'
@@ -196,13 +247,6 @@
                             <span>
                                 <i class="fas fa-chart-pie"></i> Estados de Acceso
                             </span>
-                        
-                            <form method="GET" action="/metricas" class="d-flex align-items-center">
-                                <input type="date" name="fecha" value="{{ fecha }}" class="form-control form-control-sm me-2">
-                                <button type="submit" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </form>
                         </div>
                         <div class="chart-container">
                             <canvas id="chartEstados" data-labels='{{ estados_labels | tojson }}'

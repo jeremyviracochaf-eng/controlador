@@ -667,17 +667,32 @@ def metricas_page():
         horas_valores = [row[1] for row in datos_horas]
 
         # 3. Top 5 usuarios con más accesos válidos
-        cursor.execute(
-            """
-            SELECT usuarios.nombre, COUNT(accesos.id) as total
-            FROM accesos
-            INNER JOIN usuarios ON accesos.usuario_id = usuarios.id
-            WHERE accesos.usuario_id IS NOT NULL
-            GROUP BY usuarios.id, usuarios.nombre
-            ORDER BY total DESC
-            LIMIT 5
-            """
-        )
+        if fecha:
+            cursor.execute(
+                """
+                SELECT usuarios.nombre, COUNT(accesos.id) as total
+                FROM accesos
+                INNER JOIN usuarios ON accesos.usuario_id = usuarios.id
+                WHERE accesos.usuario_id IS NOT NULL
+                  AND DATE(accesos.fecha_hora) = %s
+                GROUP BY usuarios.id, usuarios.nombre
+                ORDER BY total DESC
+                LIMIT 5
+                """,
+                (fecha,)
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT usuarios.nombre, COUNT(accesos.id) as total
+                FROM accesos
+                INNER JOIN usuarios ON accesos.usuario_id = usuarios.id
+                WHERE accesos.usuario_id IS NOT NULL
+                GROUP BY usuarios.id, usuarios.nombre
+                ORDER BY total DESC
+                LIMIT 5
+                """
+            )
         datos_top = cursor.fetchall()
         top_labels = [row[0] for row in datos_top]
         top_valores = [row[1] for row in datos_top]
